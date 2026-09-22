@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROMPT VIDEO PRO - Affiliate AI</title>
+    
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: #f8fafc; 
+            color: #0f172a; 
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .tab-active { border-bottom: 2px solid #0f172a; color: #0f172a; font-weight: 700; }
+        .tab-inactive { color: #64748b; font-weight: 600; }
+        .tab-inactive:hover { color: #334155; }
+
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-animate { animation: slideInUp 0.3s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background-color:#f8fafc; font-family:'Inter', sans-serif;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size: 2.5rem; color: #3b82f6; margin-bottom: 1rem;"></i>
+            <h2 style="color:#0f172a; font-weight:800; font-size: 1.5rem;">Memuat Aplikasi...</h2>
+            <p style="color:#64748b; font-size:14px; margin-top:8px; text-align:center;">Menyiapkan PROMPT VIDEO PRO.</p>
+        </div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Constants Arrays
+        const STYLES = ["UGC Natural", "Hard Selling", "Soft Selling", "Cinematic Commercial", "Review Produk", "Storytelling", "Problem → Solution", "Product Showcase", "Unboxing", "First Impression", "POV", "Tutorial / How-To", "Product Demo", "Comparison Style", "Aesthetic Lifestyle", "Minimalist Product", "Fast Cut TikTok", "Talking Head", "Hands Only", "Product Hero", "Curiosity Hook", "Relatable Daily Life", "Viral Affiliate Mix", "Educational Product", "ASMR Visual Product", "Street-Style UGC", "Morning Routine", "Night Routine", "Before-After Concept", "Mini Commercial Story"];
+        const TONES = ["Natural", "Ngegas", "Halus", "Heboh", "Ngegas + Halus + Heboh", "Friendly / Bestie", "Confident", "Excited Discovery", "Calm Premium", "Urgent / FOMO", "Cheerful", "Playful", "Curious", "Surprised", "Persuasive", "Storyteller", "Reviewer", "Professional", "Casual", "Energetic", "Warm", "Elegant", "Bold", "Emotional", "Viral TikTok Energy", "Calm Friendly", "Enthusiastic Reviewer", "Soft Excited", "Confident Casual", "Fast Conversational"];
+        const VOICES = ["Suara Cwek Dewasa Indonesia 👩🏻", "Suara Cwok Dewasa Indonesia 👨🏻", "Tanpa Suara 🚫"];
+        const MODELS = ["Model Wanita 👩🏻‍💼", "Model Pria 🤵🏻", "Fokus Tangan — Wanita", "Fokus Tangan — Pria", "Model Bebas 👩🏻‍💼🤵🏻", "Model Wanita Casual 👩🏻", "Model Pria Casual 👨🏻", "Couple 👩🏻‍💼🤵🏻", "Lifestyle Model 👩🏻‍💼 / 🤵🏻", "Tanpa Model — Product Only"];
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('generator');
+            const [toastMsg, setToastMsg] = useState(null);
+            
+            // Core States
+            const [images, setImages] = useState([]);
+            const [aiAnalysisEnabled, setAiAnalysisEnabled] = useState(true);
+            const [generatedData, setGeneratedData] = useState(null);
+            const [analysisData, setAnalysisData] = useState(null);
+            
+            const fileInputRef = useRef(null);
+            
+            // Loading States
+            const [generationStatus, setGenerationStatus] = useState('idle'); // idle, reading, analyzing, scripting, complete, error
+            const [errorMessage, setErrorMessage] = useState('');
+            const [settings, setSettings] = useState({
+                style: STYLES[0],
+                tone: TONES[0],
+                voice: VOICES[0],
+                model: MODELS[0],
+                duration: '20',
+                aspectRatio: '9:16',
+                hook: 'Ngegas'
+            });
+
+            const [customFeatures, setCustomFeatures] = useState([]);
+            const [customSelections, setCustomSelections] = useState({});
+            const [showAddModal, setShowAddModal] = useState(false);
+            const [newFeature, setNewFeature] = useState({ name: '', type: 'Single Select', options: [], currentOption: '' });
+
+            useEffect(() => {
+                const saved = localStorage.getItem('affiliate-ai-custom-features');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        setCustomFeatures(parsed);
+                        let initialSelections = {};
+                        parsed.forEach(f => {
+                            if (f.showOnMain && f.options.length > 0) initialSelections[f.name] = f.options[0];
+                        });
+                        setCustomSelections(initialSelections);
+                    } catch (e) {}
+                }
+            }, []);
+
+            useEffect(() => {
+                localStorage.setItem('affiliate-ai-custom-features', JSON.stringify(customFeatures));
+            }, [customFeatures]);
+
+            const showToast = (message, type = 'info') => {
+                setToastMsg({ message, type });
+                setTimeout(() => setToastMsg(null), 3000);
+            };
+
+            const handleSettingChange = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
+
+            const fileToBase64 = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = (error) => reject(error);
+                });
+            };
+
+            const handleFileChange = (e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                    const newImages = Array.from(e.target.files).map(file => ({
+                        file, url: URL.createObjectURL(file), name: file.name
+                    }));
+                    setImages(prev => [...prev, ...newImages]);
+                    showToast(`${e.target.files.length} foto ditambahkan.`, "success");
+                }
+            };
+            const removeImage = (index) => setImages(prev => prev.filter((_, i) => i !== index));
+
+            const handleAddOption = () => {
+                if (newFeature.currentOption.trim() !== '') {
+                    setNewFeature(prev => ({ ...prev, options: [...prev.options, prev.currentOption.trim()], currentOption: '' }));
+                }
+            };
+
+            const saveCustomFeature = () => {
+                if (!newFeature.name.trim() || newFeature.options.length === 0) return showToast("Nama fitur dan min. 1 opsi wajib diisi.", "error");
+                const newF = { id: Date.now().toString(), name: newFeature.name.trim(), type: newFeature.type, options: newFeature.options, showOnMain: true };
+                setCustomFeatures(prev => [...prev, newF]);
+                setCustomSelections(prev => ({ ...prev, [newF.name]: newF.options[0] }));
+                setShowAddModal(false);
+                setNewFeature({ name: '', type: 'Single Select', options: [], currentOption: '' });
+                showToast("Custom tool ditambahkan.", "success");
+            };
+
+            const deleteCustomFeature = (id, name) => {
+                setCustomFeatures(prev => prev.filter(f => f.id !== id));
+                const newSelections = { ...customSelections };
+                delete newSelections[name];
+                setCustomSelections(newSelections);
+            };
+
+            const handleReset = () => {
+                setImages([]); setGeneratedData(null); setAnalysisData(null);
+                setGenerationStatus('idle');
+                showToast("Formulir direset.", "info");
+            };
+
+            const handleGenerate = async () => {
+                if (images.length === 0) {
+                    showToast("Silakan upload minimal satu foto produk atau deskripsi.", "error");
+                    return;
+                }
+
+                setErrorMessage('');
+                setGeneratedData(null);
+                setAnalysisData(null);
+                
+                try {
+                    // STEP 1: READING IMAGES
+                    setGenerationStatus('reading');
+                    const base64Images = await Promise.all(images.map(img => fileToBase64(img.file)));
+
+                    let actualAnalysis = null;
+
+                    // STEP 2: ANALYZING (API CALL)
+                    if (aiAnalysisEnabled) {
+                        setGenerationStatus('analyzing');
+                        const analyzeRes = await fetch('/api/analyze', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ images: base64Images })
+                        });
+
+                        if (!analyzeRes.ok) {
+                            const errData = await analyzeRes.json().catch(() => ({}));
+                            throw new Error(errData.error || "Gagal melakukan analisis gambar. Pastikan backend berjalan.");
+                        }
+                        actualAnalysis = await analyzeRes.json();
+                        setAnalysisData(actualAnalysis);
+                    } else {
+                        actualAnalysis = {
+                            nama_produk: "Produk tidak diketahui",
+                            informasi_tidak_ditemukan: "AI Analysis dimatikan oleh pengguna."
+                        };
+                    }
+
+                    // STEP 3: GENERATING SCRIPT (API CALL)
+                    setGenerationStatus('scripting');
+                    const generateRes = await fetch('/api/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            analysis: actualAnalysis, 
+                            settings, 
+                            customSelections 
+                        })
+                    });
+
+                    if (!generateRes.ok) {
+                        const errData = await generateRes.json().catch(() => ({}));
+                        throw new Error(errData.error || "Gagal membuat script video.");
+                    }
+                    
+                    const actualScenes = await generateRes.json();
+
+                    // STEP 4: COMPLETE
+                    setGeneratedData(actualScenes);
+                    setGenerationStatus('complete');
+                    showToast("Prompt berhasil dibuat!", "success");
+                    setActiveTab('results');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                } catch (error) {
+                    console.error("AI Process Failed:", error);
+                    setErrorMessage(error.message || "Terjadi kesalahan koneksi ke server.");
+                    setGenerationStatus('error');
+                    showToast("Proses AI gagal.", "error");
+                }
+            };
+
+            const copyToClipboard = (text, successMsg) => {
+                const el = document.createElement('textarea');
+                el.value = text; document.body.appendChild(el); el.select();
+                try { document.execCommand('copy'); showToast(successMsg, 'success'); } 
+                catch (err) { showToast('Gagal menyalin.', 'error'); }
+                document.body.removeChild(el);
+            };
+
+            const copyPrompt = () => {
+                if (!generatedData) return;
+                let text = `PRODUCT: ${analysisData?.nama_produk || '[Auto Identify]'}\n`;
+                text += `STYLE: ${settings.style} | TONE: ${settings.tone} | MODEL: ${settings.model} | DURATION: ${settings.duration}s | RATIO: ${settings.aspectRatio}\n\n`;
+                text += `INSTRUCTION: Preserve the exact product identity, packaging, logo, label, typography, color, shape and proportions from the reference images.\n\n`;
+                generatedData.scenes.forEach(s => {
+                    text += `SCENE ${s.id} — ${s.title}\nDuration: ${s.duration} seconds\nVisual: ${s.visual}\nTeks Animasi: "${s.text}"\nVoice Over: "${s.vo}"\nCamera: ${s.camera}\nModel Action: ${s.modelAction}\nProduct Position: ${s.productPosition}\nLighting: ${s.lighting}\nBackground: ${s.background}\n${s.cta ? `CTA: ${s.cta}\n` : ''}AI Video Prompt: ${s.aiVideoPrompt}\nT2I Prompt: ${s.t2iPrompt}\nI2V Prompt: ${s.i2vPrompt}\n\n`;
+                });
+                copyToClipboard(text, 'Semua Prompt berhasil disalin!');
+            };
+
+            const copyScene = (scene) => {
+                let text = `SCENE ${scene.id} — ${scene.title}\nDuration: ${scene.duration} seconds\nVisual: ${scene.visual}\nTeks Animasi: "${scene.text}"\nVoice Over: "${scene.vo}"\nCamera: ${scene.camera}\nModel Action: ${scene.modelAction}\nProduct Position: ${scene.productPosition}\nLighting: ${scene.lighting}\nBackground: ${scene.background}\n${scene.cta ? `CTA: ${scene.cta}\n` : ''}AI Video Prompt: ${scene.aiVideoPrompt}\nT2I Prompt: ${scene.t2iPrompt}\nI2V Prompt: ${scene.i2vPrompt}`;
+                copyToClipboard(text, `Prompt Scene ${scene.id} disalin!`);
+            }
+
+            const exportToTxt = () => {
+                if (!generatedData) return;
+                let text = `PRODUCT: ${analysisData?.nama_produk || '[Auto Identify]'}\n\n`;
+                generatedData.scenes.forEach(s => {
+                    text += `SCENE ${s.id} — ${s.title}\nAI Video Prompt: ${s.aiVideoPrompt}\n\n`;
+                });
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'affiliate-ai-prompt.txt';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                showToast("File TXT diunduh.", "success");
+            };
+
+            const renderGenerator = () => (
+                <div className="space-y-6 max-w-5xl mx-auto pb-24">
+                    
+                    {generationStatus === 'error' && (
+                        <div className="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl shadow-sm flex items-start gap-4">
+                            <i className="fas fa-triangle-exclamation text-rose-600 text-lg mt-0.5"></i>
+                            <div>
+                                <p className="text-sm text-rose-900 font-bold">{errorMessage}</p>
+                                <p className="text-xs text-rose-800 mt-1">Pastikan Backend Node.js telah berjalan dengan benar, dan API Key valid.</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-6">
+                            
+                            {/* Unified Image Upload */}
+                            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                                <div className="flex justify-between items-center mb-3">
+                                    <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                        <span className="text-lg">📸</span> Foto Produk & Deskripsi
+                                    </h3>
+                                    <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded-md">{images.length} Foto</span>
+                                </div>
+                                <p className="text-[10px] text-gray-500 mb-4">Upload foto kemasan depan, belakang, label, bahan, dan manfaat sekaligus. AI otomatis membaca dan membedakan semuanya.</p>
+                                
+                                <div 
+                                    className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:bg-slate-50 transition cursor-pointer"
+                                    onClick={() => fileInputRef.current.click()}
+                                >
+                                    <i className="fas fa-plus-circle text-3xl text-slate-400 mb-2"></i>
+                                    <p className="text-sm font-bold text-slate-700">Tambah Foto</p>
+                                    <p className="text-xs text-slate-500">Mendukung JPG, PNG, WEBP. Tanpa batas jumlah.</p>
+                                    <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple accept="image/*" className="hidden" />
+                                </div>
+
+                                {images.length > 0 && (
+                                    <div className="mt-4 grid grid-cols-4 sm:grid-cols-5 gap-2">
+                                        {images.map((img, i) => (
+                                            <div key={i} className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-square">
+                                                <img src={img.url} className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                                    <button onClick={(e) => { e.stopPropagation(); removeImage(i); }} className="text-white hover:text-red-400 p-2"><i className="fas fa-trash"></i></button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Analysis Rules */}
+                            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                                <div className="flex justify-between items-center mb-4 border-b pb-2">
+                                    <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                        <span className="text-lg">🧠</span> Analisis Semua Foto
+                                    </h3>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked={aiAnalysisEnabled} onChange={(e) => setAiAnalysisEnabled(e.target.checked)} className="sr-only peer" />
+                                        <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full p
