@@ -1,336 +1,270 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROMPT VIDEO PRO - Affiliate AI</title>
-    
-    <!-- React & Babel -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        
-        body { 
-            font-family: 'Inter', system-ui, sans-serif; 
-            background-color: #f8fafc; 
-            color: #0f172a; 
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        .tab-active { border-bottom: 2px solid #0f172a; color: #0f172a; font-weight: 700; }
-        .tab-inactive { color: #64748b; font-weight: 600; }
-        .tab-inactive:hover { color: #334155; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affiliate AI Generator</title>
 
-        @keyframes slideInUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .toast-animate { animation: slideInUp 0.3s ease-out forwards; }
-    </style>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f5f5f5;
+  color:#222;
+}
+.container{
+  max-width:700px;
+  margin:auto;
+  padding:20px;
+}
+h1{
+  text-align:center;
+  margin-bottom:5px;
+}
+.subtitle{
+  text-align:center;
+  color:#666;
+  margin-bottom:20px;
+}
+.card{
+  background:white;
+  padding:18px;
+  border-radius:15px;
+  margin-bottom:15px;
+  box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+label{
+  display:block;
+  font-weight:bold;
+  margin:12px 0 7px;
+}
+input,textarea,select{
+  width:100%;
+  padding:12px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  font-size:15px;
+}
+textarea{
+  min-height:110px;
+  resize:vertical;
+}
+button{
+  width:100%;
+  padding:13px;
+  border:0;
+  border-radius:10px;
+  background:#111;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:15px;
+}
+button:hover{
+  opacity:.9;
+}
+.result{
+  white-space:pre-wrap;
+  background:#fafafa;
+  border:1px solid #ddd;
+  padding:15px;
+  border-radius:10px;
+  line-height:1.6;
+}
+.copy{
+  background:#333;
+}
+.small{
+  font-size:13px;
+  color:#777;
+}
+</style>
 </head>
+
 <body>
-    <div id="root">
-        <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background-color:#f8fafc; font-family:'Inter', sans-serif;">
-            <i class="fas fa-circle-notch fa-spin" style="font-size: 2.5rem; color: #3b82f6; margin-bottom: 1rem;"></i>
-            <h2 style="color:#0f172a; font-weight:800; font-size: 1.5rem;">Memuat Aplikasi...</h2>
-            <p style="color:#64748b; font-size:14px; margin-top:8px; text-align:center;">Menyiapkan PROMPT VIDEO PRO.</p>
-        </div>
-    </div>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+<div class="container">
 
-        // Constants Arrays
-        const STYLES = ["UGC Natural", "Hard Selling", "Soft Selling", "Cinematic Commercial", "Review Produk", "Storytelling", "Problem → Solution", "Product Showcase", "Unboxing", "First Impression", "POV", "Tutorial / How-To", "Product Demo", "Comparison Style", "Aesthetic Lifestyle", "Minimalist Product", "Fast Cut TikTok", "Talking Head", "Hands Only", "Product Hero", "Curiosity Hook", "Relatable Daily Life", "Viral Affiliate Mix", "Educational Product", "ASMR Visual Product", "Street-Style UGC", "Morning Routine", "Night Routine", "Before-After Concept", "Mini Commercial Story"];
-        const TONES = ["Natural", "Ngegas", "Halus", "Heboh", "Ngegas + Halus + Heboh", "Friendly / Bestie", "Confident", "Excited Discovery", "Calm Premium", "Urgent / FOMO", "Cheerful", "Playful", "Curious", "Surprised", "Persuasive", "Storyteller", "Reviewer", "Professional", "Casual", "Energetic", "Warm", "Elegant", "Bold", "Emotional", "Viral TikTok Energy", "Calm Friendly", "Enthusiastic Reviewer", "Soft Excited", "Confident Casual", "Fast Conversational"];
-        const VOICES = ["Suara Cwek Dewasa Indonesia 👩🏻", "Suara Cwok Dewasa Indonesia 👨🏻", "Tanpa Suara 🚫"];
-        const MODELS = ["Model Wanita 👩🏻‍💼", "Model Pria 🤵🏻", "Fokus Tangan — Wanita", "Fokus Tangan — Pria", "Model Bebas 👩🏻‍💼🤵🏻", "Model Wanita Casual 👩🏻", "Model Pria Casual 👨🏻", "Couple 👩🏻‍💼🤵🏻", "Lifestyle Model 👩🏻‍💼 / 🤵🏻", "Tanpa Model — Product Only"];
+<h1>🤖 Affiliate AI</h1>
+<div class="subtitle">
+Generator Prompt Video + Hook + Caption + Hashtag
+</div>
 
-        const App = () => {
-            const [activeTab, setActiveTab] = useState('generator');
-            const [toastMsg, setToastMsg] = useState(null);
-            
-            // Core States
-            const [images, setImages] = useState([]);
-            const [aiAnalysisEnabled, setAiAnalysisEnabled] = useState(true);
-            const [generatedData, setGeneratedData] = useState(null);
-            const [analysisData, setAnalysisData] = useState(null);
-            
-            const fileInputRef = useRef(null);
-            
-            // Loading States
-            const [generationStatus, setGenerationStatus] = useState('idle'); // idle, reading, analyzing, scripting, complete, error
-            const [errorMessage, setErrorMessage] = useState('');
-            const [settings, setSettings] = useState({
-                style: STYLES[0],
-                tone: TONES[0],
-                voice: VOICES[0],
-                model: MODELS[0],
-                duration: '20',
-                aspectRatio: '9:16',
-                hook: 'Ngegas'
-            });
+<div class="card">
 
-            const [customFeatures, setCustomFeatures] = useState([]);
-            const [customSelections, setCustomSelections] = useState({});
-            const [showAddModal, setShowAddModal] = useState(false);
-            const [newFeature, setNewFeature] = useState({ name: '', type: 'Single Select', options: [], currentOption: '' });
+<label>Nama Produk</label>
+<input id="produk" placeholder="Contoh: Parfum Roll On Vanilla">
 
-            useEffect(() => {
-                const saved = localStorage.getItem('affiliate-ai-custom-features');
-                if (saved) {
-                    try {
-                        const parsed = JSON.parse(saved);
-                        setCustomFeatures(parsed);
-                        let initialSelections = {};
-                        parsed.forEach(f => {
-                            if (f.showOnMain && f.options.length > 0) initialSelections[f.name] = f.options[0];
-                        });
-                        setCustomSelections(initialSelections);
-                    } catch (e) {}
-                }
-            }, []);
+<label>Deskripsi / Caption Produk</label>
+<textarea id="deskripsi"
+placeholder="Masukkan deskripsi produk, keunggulan, ukuran, aroma, bahan, manfaat, atau informasi lainnya..."></textarea>
 
-            useEffect(() => {
-                localStorage.setItem('affiliate-ai-custom-features', JSON.stringify(customFeatures));
-            }, [customFeatures]);
+<label>Durasi Video</label>
+<select id="durasi">
+<option value="10">10 Detik</option>
+<option value="15">15 Detik</option>
+<option value="20" selected>20 Detik</option>
+<option value="30">30 Detik</option>
+</select>
 
-            const showToast = (message, type = 'info') => {
-                setToastMsg({ message, type });
-                setTimeout(() => setToastMsg(null), 3000);
-            };
+<label>Gaya Video</label>
+<select id="gaya">
+<option value="Review">Review</option>
+<option value="Soft Selling">Soft Selling</option>
+<option value="Ngegas">Ngegas / FYP</option>
+</select>
 
-            const handleSettingChange = (key, value) => setSettings(prev => ({ ...prev, [key]: value }));
+<label>Gaya Hook</label>
+<select id="hook">
+<option value="normal">Normal</option>
+<option value="ngegas">Ngegas</option>
+<option value="rekomendasi">Ada rekomendasi</option>
+</select>
 
-            const fileToBase64 = (file) => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = (error) => reject(error);
-                });
-            };
+<button onclick="buatKonten()">✨ BUAT KONTEN AFFILIATE</button>
 
-            const handleFileChange = (e) => {
-                if (e.target.files && e.target.files.length > 0) {
-                    const newImages = Array.from(e.target.files).map(file => ({
-                        file, url: URL.createObjectURL(file), name: file.name
-                    }));
-                    setImages(prev => [...prev, ...newImages]);
-                    showToast(`${e.target.files.length} foto ditambahkan.`, "success");
-                }
-            };
-            const removeImage = (index) => setImages(prev => prev.filter((_, i) => i !== index));
+</div>
 
-            const handleAddOption = () => {
-                if (newFeature.currentOption.trim() !== '') {
-                    setNewFeature(prev => ({ ...prev, options: [...prev.options, prev.currentOption.trim()], currentOption: '' }));
-                }
-            };
+<div class="card" id="hasilCard" style="display:none">
 
-            const saveCustomFeature = () => {
-                if (!newFeature.name.trim() || newFeature.options.length === 0) return showToast("Nama fitur dan min. 1 opsi wajib diisi.", "error");
-                const newF = { id: Date.now().toString(), name: newFeature.name.trim(), type: newFeature.type, options: newFeature.options, showOnMain: true };
-                setCustomFeatures(prev => [...prev, newF]);
-                setCustomSelections(prev => ({ ...prev, [newF.name]: newF.options[0] }));
-                setShowAddModal(false);
-                setNewFeature({ name: '', type: 'Single Select', options: [], currentOption: '' });
-                showToast("Custom tool ditambahkan.", "success");
-            };
+<h2>🎬 Prompt Video</h2>
+<div id="prompt" class="result"></div>
 
-            const deleteCustomFeature = (id, name) => {
-                setCustomFeatures(prev => prev.filter(f => f.id !== id));
-                const newSelections = { ...customSelections };
-                delete newSelections[name];
-                setCustomSelections(newSelections);
-            };
+<h2>🪝 Hook</h2>
+<div id="hookHasil" class="result"></div>
 
-            const handleReset = () => {
-                setImages([]); setGeneratedData(null); setAnalysisData(null);
-                setGenerationStatus('idle');
-                showToast("Formulir direset.", "info");
-            };
+<h2>📝 Caption</h2>
+<div id="caption" class="result"></div>
 
-            const handleGenerate = async () => {
-                if (images.length === 0) {
-                    showToast("Silakan upload minimal satu foto produk atau deskripsi.", "error");
-                    return;
-                }
+<h2>#️⃣ Hashtag</h2>
+<div id="hashtag" class="result"></div>
 
-                setErrorMessage('');
-                setGeneratedData(null);
-                setAnalysisData(null);
-                
-                try {
-                    // STEP 1: READING IMAGES
-                    setGenerationStatus('reading');
-                    const base64Images = await Promise.all(images.map(img => fileToBase64(img.file)));
+<button class="copy" onclick="salinSemua()">📋 SALIN SEMUA</button>
 
-                    let actualAnalysis = null;
+</div>
 
-                    // STEP 2: ANALYZING (API CALL)
-                    if (aiAnalysisEnabled) {
-                        setGenerationStatus('analyzing');
-                        const analyzeRes = await fetch('/api/analyze', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ images: base64Images })
-                        });
+</div>
 
-                        if (!analyzeRes.ok) {
-                            const errData = await analyzeRes.json().catch(() => ({}));
-                            throw new Error(errData.error || "Gagal melakukan analisis gambar. Pastikan backend berjalan.");
-                        }
-                        actualAnalysis = await analyzeRes.json();
-                        setAnalysisData(actualAnalysis);
-                    } else {
-                        actualAnalysis = {
-                            nama_produk: "Produk tidak diketahui",
-                            informasi_tidak_ditemukan: "AI Analysis dimatikan oleh pengguna."
-                        };
-                    }
+<script>
 
-                    // STEP 3: GENERATING SCRIPT (API CALL)
-                    setGenerationStatus('scripting');
-                    const generateRes = await fetch('/api/generate', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            analysis: actualAnalysis, 
-                            settings, 
-                            customSelections 
-                        })
-                    });
+function buatKonten(){
 
-                    if (!generateRes.ok) {
-                        const errData = await generateRes.json().catch(() => ({}));
-                        throw new Error(errData.error || "Gagal membuat script video.");
-                    }
-                    
-                    const actualScenes = await generateRes.json();
+const produk=document.getElementById("produk").value.trim();
+const deskripsi=document.getElementById("deskripsi").value.trim();
+const durasi=document.getElementById("durasi").value;
+const gaya=document.getElementById("gaya").value;
+const tipeHook=document.getElementById("hook").value;
 
-                    // STEP 4: COMPLETE
-                    setGeneratedData(actualScenes);
-                    setGenerationStatus('complete');
-                    showToast("Prompt berhasil dibuat!", "success");
-                    setActiveTab('results');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+if(!produk){
+alert("Masukkan nama produk terlebih dahulu.");
+return;
+}
 
-                } catch (error) {
-                    console.error("AI Process Failed:", error);
-                    setErrorMessage(error.message || "Terjadi kesalahan koneksi ke server.");
-                    setGenerationStatus('error');
-                    showToast("Proses AI gagal.", "error");
-                }
-            };
+let hook="";
 
-            const copyToClipboard = (text, successMsg) => {
-                const el = document.createElement('textarea');
-                el.value = text; document.body.appendChild(el); el.select();
-                try { document.execCommand('copy'); showToast(successMsg, 'success'); } 
-                catch (err) { showToast('Gagal menyalin.', 'error'); }
-                document.body.removeChild(el);
-            };
+if(tipeHook==="ngegas"){
+hook=`JANGAN SKIP DULU! KALAU KALIAN LAGI CARI ${produk.toUpperCase()}, WAJIB LIHAT INI!`;
+}
 
-            const copyPrompt = () => {
-                if (!generatedData) return;
-                let text = `PRODUCT: ${analysisData?.nama_produk || '[Auto Identify]'}\n`;
-                text += `STYLE: ${settings.style} | TONE: ${settings.tone} | MODEL: ${settings.model} | DURATION: ${settings.duration}s | RATIO: ${settings.aspectRatio}\n\n`;
-                text += `INSTRUCTION: Preserve the exact product identity, packaging, logo, label, typography, color, shape and proportions from the reference images.\n\n`;
-                generatedData.scenes.forEach(s => {
-                    text += `SCENE ${s.id} — ${s.title}\nDuration: ${s.duration} seconds\nVisual: ${s.visual}\nTeks Animasi: "${s.text}"\nVoice Over: "${s.vo}"\nCamera: ${s.camera}\nModel Action: ${s.modelAction}\nProduct Position: ${s.productPosition}\nLighting: ${s.lighting}\nBackground: ${s.background}\n${s.cta ? `CTA: ${s.cta}\n` : ''}AI Video Prompt: ${s.aiVideoPrompt}\nT2I Prompt: ${s.t2iPrompt}\nI2V Prompt: ${s.i2vPrompt}\n\n`;
-                });
-                copyToClipboard(text, 'Semua Prompt berhasil disalin!');
-            };
+else if(tipeHook==="rekomendasi"){
+hook=`ADA REKOMENDASI ${produk}? INI SALAH SATU YANG WAJIB KALIAN CEK!`;
+}
 
-            const copyScene = (scene) => {
-                let text = `SCENE ${scene.id} — ${scene.title}\nDuration: ${scene.duration} seconds\nVisual: ${scene.visual}\nTeks Animasi: "${scene.text}"\nVoice Over: "${scene.vo}"\nCamera: ${scene.camera}\nModel Action: ${scene.modelAction}\nProduct Position: ${scene.productPosition}\nLighting: ${scene.lighting}\nBackground: ${scene.background}\n${scene.cta ? `CTA: ${scene.cta}\n` : ''}AI Video Prompt: ${scene.aiVideoPrompt}\nT2I Prompt: ${scene.t2iPrompt}\nI2V Prompt: ${scene.i2vPrompt}`;
-                copyToClipboard(text, `Prompt Scene ${scene.id} disalin!`);
-            }
+else{
+hook=`Lagi cari ${produk}? Coba lihat yang satu ini!`;
+}
 
-            const exportToTxt = () => {
-                if (!generatedData) return;
-                let text = `PRODUCT: ${analysisData?.nama_produk || '[Auto Identify]'}\n\n`;
-                generatedData.scenes.forEach(s => {
-                    text += `SCENE ${s.id} — ${s.title}\nAI Video Prompt: ${s.aiVideoPrompt}\n\n`;
-                });
-                const blob = new Blob([text], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = 'affiliate-ai-prompt.txt';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                showToast("File TXT diunduh.", "success");
-            };
+let prompt=`
 
-            const renderGenerator = () => (
-                <div className="space-y-6 max-w-5xl mx-auto pb-24">
-                    
-                    {generationStatus === 'error' && (
-                        <div className="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl shadow-sm flex items-start gap-4">
-                            <i className="fas fa-triangle-exclamation text-rose-600 text-lg mt-0.5"></i>
-                            <div>
-                                <p className="text-sm text-rose-900 font-bold">{errorMessage}</p>
-                                <p className="text-xs text-rose-800 mt-1">Pastikan Backend Node.js telah berjalan dengan benar, dan API Key valid.</p>
-                            </div>
-                        </div>
-                    )}
+VIDEO AFFILIATE
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-6">
-                            
-                            {/* Unified Image Upload */}
-                            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                                <div className="flex justify-between items-center mb-3">
-                                    <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                                        <span className="text-lg">📸</span> Foto Produk & Deskripsi
-                                    </h3>
-                                    <span className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded-md">{images.length} Foto</span>
-                                </div>
-                                <p className="text-[10px] text-gray-500 mb-4">Upload foto kemasan depan, belakang, label, bahan, dan manfaat sekaligus. AI otomatis membaca dan membedakan semuanya.</p>
-                                
-                                <div 
-                                    className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:bg-slate-50 transition cursor-pointer"
-                                    onClick={() => fileInputRef.current.click()}
-                                >
-                                    <i className="fas fa-plus-circle text-3xl text-slate-400 mb-2"></i>
-                                    <p className="text-sm font-bold text-slate-700">Tambah Foto</p>
-                                    <p className="text-xs text-slate-500">Mendukung JPG, PNG, WEBP. Tanpa batas jumlah.</p>
-                                    <input type="file" ref={fileInputRef} onChange={handleFileChange} multiple accept="image/*" className="hidden" />
-                                </div>
+PRODUK:
+${produk}
 
-                                {images.length > 0 && (
-                                    <div className="mt-4 grid grid-cols-4 sm:grid-cols-5 gap-2">
-                                        {images.map((img, i) => (
-                                            <div key={i} className="relative group rounded-lg overflow-hidden border border-gray-200 aspect-square">
-                                                <img src={img.url} className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                                                    <button onClick={(e) => { e.stopPropagation(); removeImage(i); }} className="text-white hover:text-red-400 p-2"><i className="fas fa-trash"></i></button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+DURASI:
+${durasi} detik
 
-                            {/* Analysis Rules */}
-                            <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                                <div className="flex justify-between items-center mb-4 border-b pb-2">
-                                    <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                                        <span className="text-lg">🧠</span> Analisis Semua Foto
-                                    </h3>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked={aiAnalysisEnabled} onChange={(e) => setAiAnalysisEnabled(e.target.checked)} className="sr-only peer" />
-                                        <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full p
+GAYA:
+${gaya}
+
+FORMAT:
+9:16 vertikal, kualitas HD/2K, realistis, cocok untuk TikTok Affiliate.
+
+INSTRUKSI:
+Buat video review produk yang natural dan menarik.
+Produk harus menjadi fokus utama.
+Pertahankan bentuk, warna, tulisan, logo, kemasan,
+dan detail produk sesuai referensi asli.
+
+Gunakan gerakan kamera yang halus:
+zoom in, zoom out, camera movement ringan,
+dan beberapa angle produk.
+
+VOICE OVER:
+Bahasa Indonesia.
+Suara natural, jelas, dan tidak kaku.
+
+HOOK:
+${hook}
+
+INFORMASI PRODUK:
+${deskripsi || "Gunakan informasi produk yang terlihat dari nama produk."}
+
+AKHIR VIDEO:
+Tampilkan produk dengan jelas dan tambahkan teks:
+
+"CEK KERANJANG KUNING"
+
+Jangan membuat klaim berlebihan.
+Jangan menambahkan informasi produk yang tidak tersedia.
+`;
+
+let caption=
+`🔥 ${produk} yang lagi wajib banget kalian cek!
+
+Kalau kalian lagi cari produk seperti ini,
+bisa banget masuk wishlist. 👀
+
+${deskripsi ? deskripsi.substring(0,250) : "Cek detail produknya dan lihat apakah cocok buat kamu."}
+
+👉 Cek produknya di keranjang kuning!`;
+
+let hashtag=
+`#affiliate #tiktokaffiliate #racuntiktok #fyp #fypシ #viral #rekomendasi #${produk.replace(/[^a-zA-Z0-9]/g,"").toLowerCase()}`;
+
+document.getElementById("prompt").textContent=prompt.trim();
+document.getElementById("hookHasil").textContent=hook;
+document.getElementById("caption").textContent=caption;
+document.getElementById("hashtag").textContent=hashtag;
+
+document.getElementById("hasilCard").style.display="block";
+
+}
+
+function salinSemua(){
+
+const semua=
+`HOOK:
+${document.getElementById("hookHasil").textContent}
+
+PROMPT VIDEO:
+${document.getElementById("prompt").textContent}
+
+CAPTION:
+${document.getElementById("caption").textContent}
+
+HASHTAG:
+${document.getElementById("hashtag").textContent}`;
+
+navigator.clipboard.writeText(semua);
+
+alert("Semua konten berhasil disalin!");
+
+}
+
+</script>
+
+</body>
+</html>                                                  
