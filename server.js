@@ -1,165 +1,139 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const { OpenAI } = require('openai');
+const express = require("express");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-// Limit diperbesar ke 50mb untuk menerima banyak gambar base64
-app.use(express.json({ limit: '50mb' })); 
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ extended: true }));
 
-// Menyajikan file static dari folder public (tempat index.html berada)
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
-// Inisialisasi OpenAI
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+// ===============================
+// ANALISIS PRODUK — VERSI GRATIS
+// ===============================
+app.post("/api/analyze", (req, res) => {
+  const images = req.body.images || [];
+
+  if (!images.length) {
+    return res.status(400).json({
+      error: "Belum ada foto produk."
+    });
+  }
+
+  res.json({
+    success: true,
+    jumlahFoto: images.length,
+    message:
+      "Foto produk berhasil dimasukkan. Karena versi gratis tidak menggunakan AI API, informasi produk diambil dari data yang kamu masukkan pada form."
+  });
 });
 
-// =========================================================================
-// ENDPOINT 1: Analisis Gambar (Membaca semua foto dengan AI Vision)
-// =========================================================================
-app.post('/api/analyze', async (req, res) => {
-    try {
-        const { images } = req.body; 
 
-        if (!images || images.length === 0) {
-            return res.status(400).json({ error: 'Tidak ada gambar yang dikirim.' });
-        }
+// ===============================
+// GENERATOR PROMPT VIDEO
+// ===============================
+app.post("/api/generate", (req, res) => {
 
-        // Format gambar untuk OpenAI Vision
-        const imageContents = images.map(imgBase64 => ({
-            type: "image_url",
-            image_url: { url: imgBase64 }
-        }));
+  const analysis = req.body.analysis || {};
+  const settings = req.body.settings || {};
+  const custom = req.body.customSelections || {};
 
-        const promptText = `
-        Anda adalah analis produk profesional. Analisis SEMUA gambar produk ini secara teliti.
-        BACA semua tulisan yang terlihat pada kemasan maupun deskripsi yang ada di foto.
-        
-        Keluarkan data dalam format JSON dengan struktur persis seperti ini:
-        {
-            "nama_produk": "...",
-            "kategori": "...",
-            "jenis": "...",
-            "warna": "...",
-            "bentuk": "...",
-            "ukuran_volume": "...",
-            "tekstur": "...",
-            "kandungan": "...",
-            "manfaat": "...",
-            "fitur": "...",
-            "klaim": "...",
-            "informasi_kemasan": "...",
-            "tulisan_terbaca": "...",
-            "informasi_tidak_ditemukan": "Daftar info yang benar-benar tidak ada di foto"
-        }
+  const product =
+    custom.productName ||
+    "produk ini";
 
-        ATURAN SANGAT KETAT (ANTI-HALLUCINATION):
-        1. DILARANG MENGARANG INFORMASI. Jangan menebak-nebak.
-        2. Jika sebuah informasi tidak terlihat, tidak ada di foto, atau tidak disebutkan, tulis persis: "Informasi tidak ditemukan pada foto."
-        3. Jika ada teks yang buram atau tidak terbaca, tulis: "Tulisan tidak terbaca."
-        4. Hanya gunakan FAKTA dari gambar yang diunggah.
-        `;
+  const description =
+    custom.description ||
+    "Tampilkan produk sesuai foto referensi tanpa mengubah bentuk, warna, logo, atau detail produk.";
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o", 
-            messages: [
-                {
-                    role: "user",
-                    content: [
-                        { type: "text", text: promptText },
-                        ...imageContents
-                    ]
-                }
-            ],
-            response_format: { type: "json_object" },
-            max_tokens: 1500,
-        });
+  const duration =
+    settings.duration || "20";
 
-        const analysisResult = JSON.parse(response.choices[0].message.content);
-        res.json(analysisResult);
+  const style =
+    settings.style || "TikTok Creator FYP";
 
-    } catch (error) {
-        console.error('Analyze Error:', error);
-        res.status(500).json({ error: 'Gagal menganalisis gambar. Pastikan API Key valid atau coba kurangi jumlah/ukuran foto.' });
-    }
-});
+  const tone =
+    settings.tone || "Sensasional (ngegas + heboh)";
 
-// =========================================================================
-// ENDPOINT 2: Generate Prompt (Membuat 6 Scene Video Berdasarkan Analisis)
-// =========================================================================
-app.post('/api/generate', async (req, res) => {
-    try {
-        const { analysis, settings, customSelections } = req.body;
+  const voice =
+    settings.voice || "Wanita Dewasa Indonesia";
 
-        const promptText = `
-        Anda adalah Video Director dan Copywriter profesional untuk konten TikTok Affiliate.
-        Berdasarkan data produk nyata hasil analisis Vision AI berikut ini:
-        ${JSON.stringify(analysis, null, 2)}
-        
-        Dan pengaturan video yang dipilih user:
-        Durasi: ${settings.duration} detik
-        Style Video: ${settings.style}
-        Nada Suara: ${settings.tone}
-        Jenis Suara: ${settings.voice}
-        Model: ${settings.model}
-        Hook Opening: ${settings.hook}
-        Pengaturan Custom: ${JSON.stringify(customSelections)}
+  const model =
+    settings.model || "Wanita Fokus Tangan";
 
-        Buatlah 6 Scene Video Prompt (Hook, Pain Point, Solution, Benefit, Proof, CTA) dengan total durasi pas ${settings.duration} detik.
-        
-        ATURAN SANGAT KETAT:
-        1. DILARANG MEMBUAT VOICE-OVER TEMPLATE. Voice Over harus dinamis, natural, dan 100% didasarkan pada fakta produk di atas. Sesuaikan gaya bicara dengan "Nada Suara" dan "Jenis Suara".
-        2. Jangan membuat klaim medis, janji palsu, "100% berhasil", atau klaim berlebihan jika tidak terverifikasi di data produk.
-        3. Scene 1 WAJIB berupa Hook (4 detik).
-        4. Scene 6 WAJIB berupa CTA mengarahkan ke "keranjang kuning ðŸŸ¡". Dilarang menyuruh klik link bio.
-        5. Visual dan AI Prompt wajib menginstruksikan: "Preserve the exact product identity, packaging, logo, text, color, shape and proportions from the reference images".
-        6. Format output HARUS JSON dengan struktur persis seperti ini:
-        {
-            "isCompliant": boolean,
-            "complianceMessage": "Pesan review keamanan konten TikTok affiliate",
-            "caption": "Ide caption TikTok yang menarik",
-            "hashtags": "#tagar1 #tagar2 (minimal 5)",
-            "scenes": [
-                {
-                    "id": 1, "title": "HOOK", "duration": 4,
-                    "visual": "...", "text": "...", "vo": "...",
-                    "camera": "...", "modelAction": "...", "productPosition": "...",
-                    "lighting": "...", "background": "...",
-                    "aiVideoPrompt": "...", "t2iPrompt": "...", "i2vPrompt": "...",
-                    "cta": "" 
-                }
-                // Lanjutkan persis sampai 6 scene. (Untuk Scene 6, isi field "cta": "Keranjang Kuning ðŸŸ¡")
-            ]
-        }
-        `;
+  const hook =
+    settings.hook || "Ada rekomendasi";
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                { role: "system", content: "You are an expert AI JSON API generating TikTok video prompt storyboards based on factual product data." },
-                { role: "user", content: promptText }
-            ],
-            response_format: { type: "json_object" },
-            max_tokens: 3500,
-        });
+  const customPoints =
+    custom.customPoints || "";
 
-        const scenesResult = JSON.parse(response.choices[0].message.content);
-        res.json(scenesResult);
+  let sceneCount = 6;
 
-    } catch (error) {
-        console.error('Generate Error:', error);
-        res.status(500).json({ error: 'Gagal membuat script prompt video.' });
-    }
-});
+  if (duration === "10") sceneCount = 4;
+  if (duration === "20") sceneCount = 6;
+  if (duration === "30") sceneCount = 8;
 
-// Wajib bind ke 0.0.0.0 untuk cloud hosting seperti Render/Heroku
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`âœ… Backend berjalan di port ${PORT}`);
-});
+
+  const sceneDurations = {
+
+    "10": ["4 detik", "3 detik", "3 detik", "CTA 3 detik"],
+
+    "20": [
+      "4 detik",
+      "3 detik",
+      "3 detik",
+      "3 detik",
+      "3 detik",
+      "4 detik"
+    ],
+
+    "30": [
+      "4 detik",
+      "3 detik",
+      "3 detik",
+      "3 detik",
+      "4 detik",
+      "3 detik",
+      "3 detik",
+      "4 detik"
+    ]
+
+  };
+
+  const durations =
+    sceneDurations[duration] ||
+    sceneDurations["20"];
+
+
+  const scenes = [];
+
+
+  // ===============================
+  // SCENE 1
+  // ===============================
+
+  scenes.push({
+    id: 1,
+    title: "HOOK",
+    duration: durations[0],
+
+    visual:
+      `Tampilkan ${product} dengan sangat jelas sejak awal video. Produk menjadi fokus utama dan seluruh bentuk, warna, logo, tekstur, serta detailnya harus mengikuti foto referensi.`,
+
+    camera:
+      "Kamera bergerak perlahan mendekati produk dari jarak sedang menuju close-up. Gerakan kamera halus tetapi tetap terasa hidup seperti video creator TikTok.",
+
+    modelAction:
+      model === "Tanpa Model"
+        ? "Tidak ada model. Produk ditampilkan sebagai fokus utama."
+        : `${model} menampilkan produk secara natural dan langsung mengarahkan perhatian penonton ke produk.`,
+
+    background:
+      "Background bersih, terang, realistis, dan tidak mengganggu produk.",
+
+    text:
+      `${hook} ${product}!`,
+
+    aiVideoPrompt:
+      `Buat video affiliate vertikal 9:16. ${product} menjadi fokus utama. Gunakan foto produk sebagai referensi utama. Pertahankan bentuk, warna, logo
