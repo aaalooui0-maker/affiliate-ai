@@ -7,78 +7,126 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:#f5f5f5;
   color:#222;
 }
+
 .container{
-  max-width:700px;
+  max-width:800px;
   margin:auto;
   padding:20px;
 }
+
 h1{
   text-align:center;
   margin-bottom:5px;
 }
+
 .subtitle{
   text-align:center;
   color:#666;
-  margin-bottom:20px;
+  margin-bottom:25px;
 }
+
 .card{
   background:white;
-  padding:18px;
-  border-radius:15px;
-  margin-bottom:15px;
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:18px;
   box-shadow:0 3px 12px rgba(0,0,0,.08);
 }
+
 label{
   display:block;
   font-weight:bold;
-  margin:12px 0 7px;
+  margin:14px 0 7px;
 }
-input,textarea,select{
+
+input,select,textarea{
   width:100%;
   padding:12px;
-  border:1px solid #ddd;
+  border:1px solid #ccc;
   border-radius:10px;
   font-size:15px;
 }
+
 textarea{
-  min-height:110px;
+  min-height:100px;
   resize:vertical;
 }
+
 button{
-  width:100%;
-  padding:13px;
   border:0;
   border-radius:10px;
-  background:#111;
-  color:white;
-  font-size:16px;
+  padding:13px 18px;
+  font-size:15px;
   font-weight:bold;
   cursor:pointer;
+}
+
+.primary{
+  width:100%;
+  background:#111;
+  color:white;
+  margin-top:18px;
+}
+
+.secondary{
+  background:#eee;
+  color:#222;
+}
+
+.preview{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
   margin-top:15px;
 }
-button:hover{
-  opacity:.9;
+
+.preview img{
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border-radius:10px;
 }
+
 .result{
   white-space:pre-wrap;
-  background:#fafafa;
-  border:1px solid #ddd;
+  background:#111;
+  color:#eee;
   padding:15px;
-  border-radius:10px;
+  border-radius:12px;
+  overflow:auto;
+  font-size:14px;
   line-height:1.6;
 }
-.copy{
-  background:#333;
+
+.status{
+  text-align:center;
+  margin-top:12px;
+  color:#666;
 }
+
+.row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
 .small{
   font-size:13px;
   color:#777;
+  margin-top:5px;
+}
+
+@media(max-width:600px){
+  .row{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
@@ -87,61 +135,202 @@ button:hover{
 
 <div class="container">
 
-<h1>🤖 Affiliate AI</h1>
+<h1>Affiliate AI Generator</h1>
 <div class="subtitle">
-Generator Prompt Video + Hook + Caption + Hashtag
+Analisis produk + Prompt Video Affiliate
 </div>
 
 <div class="card">
 
-<label>Nama Produk</label>
-<input id="produk" placeholder="Contoh: Parfum Roll On Vanilla">
+<h3>📸 Foto Produk</h3>
 
-<label>Deskripsi / Caption Produk</label>
-<textarea id="deskripsi"
-placeholder="Masukkan deskripsi produk, keunggulan, ukuran, aroma, bahan, manfaat, atau informasi lainnya..."></textarea>
+<input
+  type="file"
+  id="images"
+  accept="image/*"
+  multiple
+>
 
-<label>Durasi Video</label>
-<select id="durasi">
-<option value="10">10 Detik</option>
-<option value="15">15 Detik</option>
-<option value="20" selected>20 Detik</option>
-<option value="30">30 Detik</option>
-</select>
+<div class="small">
+Upload beberapa foto produk agar AI dapat membaca informasi dari gambar.
+</div>
 
-<label>Gaya Video</label>
-<select id="gaya">
-<option value="Review">Review</option>
-<option value="Soft Selling">Soft Selling</option>
-<option value="Ngegas">Ngegas / FYP</option>
-</select>
-
-<label>Gaya Hook</label>
-<select id="hook">
-<option value="normal">Normal</option>
-<option value="ngegas">Ngegas</option>
-<option value="rekomendasi">Ada rekomendasi</option>
-</select>
-
-<button onclick="buatKonten()">✨ BUAT KONTEN AFFILIATE</button>
+<div id="preview" class="preview"></div>
 
 </div>
 
-<div class="card" id="hasilCard" style="display:none">
+<div class="card">
 
-<h2>🎬 Prompt Video</h2>
-<div id="prompt" class="result"></div>
+<h3>📝 Informasi Produk</h3>
 
-<h2>🪝 Hook</h2>
-<div id="hookHasil" class="result"></div>
+<label>Nama Produk</label>
+<input
+  id="productName"
+  placeholder="Contoh: Ruby Bag 2in1"
+>
 
-<h2>📝 Caption</h2>
-<div id="caption" class="result"></div>
+<label>Deskripsi Tambahan</label>
+<textarea
+  id="description"
+  placeholder="Opsional. Isi informasi tambahan tentang produk jika ada."
+></textarea>
 
-<h2>#️⃣ Hashtag</h2>
-<div id="hashtag" class="result"></div>
+</div>
 
-<button class="copy" onclick="salinSemua()">📋 SALIN SEMUA</button>
+<div class="card">
+
+<h3>🎬 Pengaturan Video</h3>
+
+<div class="row">
+
+<div>
+<label>Durasi</label>
+<select id="duration">
+<option value="10">10 Detik</option>
+<option value="20" selected>20 Detik</option>
+<option value="30">30 Detik</option>
+</select>
+</div>
+
+<div>
+<label>Style Video</label>
+<select id="style">
+<option>TikTok Creator FYP</option>
+<option>Review Produk</option>
+<option>Problem & Solution</option>
+<option>Unboxing</option>
+<option>Soft Selling</option>
+<option>Hard Selling</option>
+<option>Aesthetic Product</option>
+<option>Simple Product Showcase</option>
+</select>
+</div>
+
+</div>
+
+<div class="row">
+
+<div>
+<label>Nada Suara</label>
+<select id="tone">
+<option>Sensasional (ngegas + heboh)</option>
+<option>Ngegas tapi halus</option>
+<option>Semangat</option>
+<option>Enerjik</option>
+<option>Antusias</option>
+<option>Normal</option>
+<option>Soft Selling</option>
+</select>
+</div>
+
+<div>
+<label>Jenis Suara</label>
+<select id="voice">
+<option>Wanita Dewasa Indonesia</option>
+<option>Pria Dewasa Indonesia</option>
+<option>ASMR</option>
+<option>Tanpa Suara</option>
+</select>
+</div>
+
+</div>
+
+<label>Model</label>
+<select id="model">
+<option>Wanita</option>
+<option>Pria</option>
+<option>Wanita Fokus Tangan</option>
+<option>Pria Fokus Tangan</option>
+<option>Couple</option>
+<option>Tanpa Model</option>
+</select>
+
+<label>Hook Opening</label>
+<select id="hook">
+<option>Ada rekomendasi</option>
+<option>Jangan skip dulu</option>
+<option>Kalau kamu sedang cari produk seperti ini</option>
+<option>Ini wajib kamu lihat</option>
+<option>Baru nemu produk menarik</option>
+<option>Stop scroll dulu</option>
+</select>
+
+</div>
+
+<div class="card">
+
+<h3>⚙️ Pengaturan Tambahan</h3>
+
+<label>Custom Point</label>
+
+<textarea
+id="customPoints"
+placeholder="Contoh:
+- Tampilkan bentuk produk dengan jelas
+- Fokus pada detail bahan
+- Jangan membuat klaim berlebihan
+- Gunakan bahasa natural seperti creator TikTok"
+></textarea>
+
+<label>
+<input type="checkbox" id="safeMode" checked style="width:auto">
+ Gunakan mode teks & voice-over aman
+</label>
+
+<div class="small">
+AI akan menghindari klaim medis, janji berlebihan, dan wording yang berpotensi membuat konten bermasalah.
+</div>
+
+<button
+class="primary"
+onclick="analyzeProduct()"
+>
+🔍 ANALISIS FOTO PRODUK
+</button>
+
+<div id="status" class="status"></div>
+
+</div>
+
+<div class="card">
+
+<h3>🧠 Hasil Analisis Produk</h3>
+
+<div id="analysisResult" class="result">
+Belum ada analisis.
+</div>
+
+</div>
+
+<div class="card">
+
+<button
+class="primary"
+onclick="generatePrompt()"
+>
+✨ BUAT PROMPT VIDEO AFFILIATE
+</button>
+
+<div id="generateStatus" class="status"></div>
+
+</div>
+
+<div class="card">
+
+<h3>🎬 HASIL PROMPT VIDEO</h3>
+
+<div id="result" class="result">
+Belum ada prompt.
+</div>
+
+<br>
+
+<button
+class="secondary"
+onclick="copyResult()"
+>
+📋 SALIN HASIL
+</button>
 
 </div>
 
@@ -149,122 +338,412 @@ placeholder="Masukkan deskripsi produk, keunggulan, ukuran, aroma, bahan, manfaa
 
 <script>
 
-function buatKonten(){
+let selectedImages = [];
+let analysisData = null;
 
-const produk=document.getElementById("produk").value.trim();
-const deskripsi=document.getElementById("deskripsi").value.trim();
-const durasi=document.getElementById("durasi").value;
-const gaya=document.getElementById("gaya").value;
-const tipeHook=document.getElementById("hook").value;
+const imageInput = document.getElementById("images");
+const preview = document.getElementById("preview");
 
-if(!produk){
-alert("Masukkan nama produk terlebih dahulu.");
+imageInput.addEventListener("change", function(){
+
+selectedImages = Array.from(this.files);
+
+preview.innerHTML = "";
+
+selectedImages.forEach(file => {
+
+const reader = new FileReader();
+
+reader.onload = function(e){
+
+const img = document.createElement("img");
+
+img.src = e.target.result;
+
+preview.appendChild(img);
+
+};
+
+reader.readAsDataURL(file);
+
+});
+
+});
+
+
+function getSettings(){
+
+return {
+
+duration: document.getElementById("duration").value,
+
+style: document.getElementById("style").value,
+
+tone: document.getElementById("tone").value,
+
+voice: document.getElementById("voice").value,
+
+model: document.getElementById("model").value,
+
+hook: document.getElementById("hook").value
+
+};
+
+}
+
+
+function getCustomSelections(){
+
+return {
+
+productName:
+document.getElementById("productName").value,
+
+description:
+document.getElementById("description").value,
+
+customPoints:
+document.getElementById("customPoints").value,
+
+safeMode:
+document.getElementById("safeMode").checked
+
+};
+
+}
+
+
+function fileToBase64(file){
+
+return new Promise((resolve,reject)=>{
+
+const reader = new FileReader();
+
+reader.onload = () => resolve(reader.result);
+
+reader.onerror = reject;
+
+reader.readAsDataURL(file);
+
+});
+
+}
+
+
+async function analyzeProduct(){
+
+if(selectedImages.length === 0){
+
+alert("Silakan upload minimal 1 foto produk.");
+
 return;
-}
-
-let hook="";
-
-if(tipeHook==="ngegas"){
-hook=`JANGAN SKIP DULU! KALAU KALIAN LAGI CARI ${produk.toUpperCase()}, WAJIB LIHAT INI!`;
-}
-
-else if(tipeHook==="rekomendasi"){
-hook=`ADA REKOMENDASI ${produk}? INI SALAH SATU YANG WAJIB KALIAN CEK!`;
-}
-
-else{
-hook=`Lagi cari ${produk}? Coba lihat yang satu ini!`;
-}
-
-let prompt=`
-
-VIDEO AFFILIATE
-
-PRODUK:
-${produk}
-
-DURASI:
-${durasi} detik
-
-GAYA:
-${gaya}
-
-FORMAT:
-9:16 vertikal, kualitas HD/2K, realistis, cocok untuk TikTok Affiliate.
-
-INSTRUKSI:
-Buat video review produk yang natural dan menarik.
-Produk harus menjadi fokus utama.
-Pertahankan bentuk, warna, tulisan, logo, kemasan,
-dan detail produk sesuai referensi asli.
-
-Gunakan gerakan kamera yang halus:
-zoom in, zoom out, camera movement ringan,
-dan beberapa angle produk.
-
-VOICE OVER:
-Bahasa Indonesia.
-Suara natural, jelas, dan tidak kaku.
-
-HOOK:
-${hook}
-
-INFORMASI PRODUK:
-${deskripsi || "Gunakan informasi produk yang terlihat dari nama produk."}
-
-AKHIR VIDEO:
-Tampilkan produk dengan jelas dan tambahkan teks:
-
-"CEK KERANJANG KUNING"
-
-Jangan membuat klaim berlebihan.
-Jangan menambahkan informasi produk yang tidak tersedia.
-`;
-
-let caption=
-`🔥 ${produk} yang lagi wajib banget kalian cek!
-
-Kalau kalian lagi cari produk seperti ini,
-bisa banget masuk wishlist. 👀
-
-${deskripsi ? deskripsi.substring(0,250) : "Cek detail produknya dan lihat apakah cocok buat kamu."}
-
-👉 Cek produknya di keranjang kuning!`;
-
-let hashtag=
-`#affiliate #tiktokaffiliate #racuntiktok #fyp #fypシ #viral #rekomendasi #${produk.replace(/[^a-zA-Z0-9]/g,"").toLowerCase()}`;
-
-document.getElementById("prompt").textContent=prompt.trim();
-document.getElementById("hookHasil").textContent=hook;
-document.getElementById("caption").textContent=caption;
-document.getElementById("hashtag").textContent=hashtag;
-
-document.getElementById("hasilCard").style.display="block";
 
 }
 
-function salinSemua(){
+const status =
+document.getElementById("status");
 
-const semua=
-`HOOK:
-${document.getElementById("hookHasil").textContent}
+const result =
+document.getElementById("analysisResult");
 
-PROMPT VIDEO:
-${document.getElementById("prompt").textContent}
+status.textContent =
+"⏳ Sedang membaca foto produk...";
 
-CAPTION:
-${document.getElementById("caption").textContent}
+result.textContent =
+"AI sedang menganalisis gambar.";
 
-HASHTAG:
-${document.getElementById("hashtag").textContent}`;
+try{
 
-navigator.clipboard.writeText(semua);
+const images = [];
 
-alert("Semua konten berhasil disalin!");
+for(const file of selectedImages){
+
+images.push(await fileToBase64(file));
+
+}
+
+const response = await fetch("/api/analyze",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+images:images
+})
+
+});
+
+const data = await response.json();
+
+if(!response.ok){
+
+throw new Error(
+data.error || "Gagal melakukan analisis."
+);
+
+}
+
+analysisData = data;
+
+result.textContent =
+JSON.stringify(data,null,2);
+
+status.textContent =
+"✅ Analisis produk selesai.";
+
+}catch(error){
+
+console.error(error);
+
+status.textContent =
+"❌ Analisis gagal.";
+
+result.textContent =
+error.message;
+
+}
+
+}
+
+
+async function generatePrompt(){
+
+if(!analysisData){
+
+alert("Silakan analisis foto produk terlebih dahulu.");
+
+return;
+
+}
+
+const status =
+document.getElementById("generateStatus");
+
+const result =
+document.getElementById("result");
+
+status.textContent =
+"⏳ Sedang membuat prompt video...";
+
+result.textContent =
+"AI sedang membuat 6 scene video...";
+
+try{
+
+const response = await fetch("/api/generate",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+analysis:analysisData,
+
+settings:getSettings(),
+
+customSelections:getCustomSelections()
+
+})
+
+});
+
+const data = await response.json();
+
+if(!response.ok){
+
+throw new Error(
+data.error || "Gagal membuat prompt."
+);
+
+}
+
+result.textContent =
+formatResult(data);
+
+status.textContent =
+"✅ Prompt video berhasil dibuat.";
+
+}catch(error){
+
+console.error(error);
+
+status.textContent =
+"❌ Gagal membuat prompt.";
+
+result.textContent =
+error.message;
+
+}
+
+}
+
+
+function formatResult(data){
+
+if(typeof data === "string"){
+
+return data;
+
+}
+
+let output = "";
+
+if(data.complianceMessage){
+
+output +=
+"🛡️ KEAMANAN KONTEN\n" +
+data.complianceMessage +
+"\n\n";
+
+}
+
+if(data.caption){
+
+output +=
+"📝 CAPTION\n" +
+data.caption +
+"\n\n";
+
+}
+
+if(data.hashtags){
+
+output +=
+"#️⃣ HASHTAGS\n" +
+data.hashtags +
+"\n\n";
+
+}
+
+if(Array.isArray(data.scenes)){
+
+data.scenes.forEach(scene=>{
+
+output +=
+"━━━━━━━━━━━━━━━━━━━━\n";
+
+output +=
+"🎬 SCENE " +
+scene.id +
+" — " +
+(scene.title || "") +
+"\n";
+
+if(scene.duration)
+output +=
+"⏱️ DURASI: " +
+scene.duration +
+"\n";
+
+if(scene.visual)
+output +=
+"👀 VISUAL:\n" +
+scene.visual +
+"\n";
+
+if(scene.camera)
+output +=
+"🎥 KAMERA:\n" +
+scene.camera +
+"\n";
+
+if(scene.modelAction)
+output +=
+"🙋 AKSI MODEL:\n" +
+scene.modelAction +
+"\n";
+
+if(scene.lighting)
+output +=
+"💡 LIGHTING:\n" +
+scene.lighting +
+"\n";
+
+if(scene.background)
+output +=
+"🏠 BACKGROUND:\n" +
+scene.background +
+"\n";
+
+if(scene.text)
+output +=
+"📝 TEKS:\n" +
+scene.text +
+"\n";
+
+if(scene.aiVideoPrompt)
+output +=
+"🎥 AI VIDEO PROMPT:\n" +
+scene.aiVideoPrompt +
+"\n";
+
+if(scene.t2iPrompt)
+output +=
+"🖼️ IMAGE PROMPT:\n" +
+scene.t2iPrompt +
+"\n";
+
+if(scene.cta)
+output +=
+"👉 CTA:\n" +
+scene.cta +
+"\n";
+
+output += "\n";
+
+});
+
+}
+
+if(!output){
+
+output =
+JSON.stringify(data,null,2);
+
+}
+
+return output;
+
+}
+
+
+function copyResult(){
+
+const text =
+document.getElementById("result").textContent;
+
+if(!text ||
+text === "Belum ada prompt."){
+
+alert("Belum ada hasil untuk disalin.");
+
+return;
+
+}
+
+navigator.clipboard.writeText(text)
+
+.then(()=>{
+
+alert("✅ Hasil berhasil disalin.");
+
+})
+
+.catch(()=>{
+
+alert("Gagal menyalin. Silakan salin manual.");
+
+});
 
 }
 
 </script>
 
 </body>
-</html>                                                  
+</html>
