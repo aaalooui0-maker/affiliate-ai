@@ -1,0 +1,16 @@
+
+{
+  "name": "affiliate-ai",
+  "version": "1.0.0",
+  "description": "AI TikTok Affiliate Prompt Generator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
